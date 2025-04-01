@@ -1,72 +1,60 @@
-import './App.module.css';
-import { useState, useEffect } from 'react';
-
-import Description from '../Description/Description';
-import Options from '../Options/Options';
-import Feedback from '../Feedback/Feedback';
-import Notification from '../Notification/Notification';
-
-const state = {
-  good: 0,
-  neutral: 0,
-  bad: 0,
-};
+import css from "./App.module.css";
+import { Formik } from "formik";
+import SearchBox from "../SearchBox/SearchBox";
+import ContactList from "../ContactList/ContactList";
+import ContactForm from "../ContactForm/ContactForm";
+import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
 
 export default function App() {
-  const [feedback, setFeedback] = useState(() => {
-    const savedFeedback = localStorage.getItem('feedback');
+  const [contacts, setContact] = useState(() => {
+    const savedContacts = window.localStorage.getItem("save-contacts");
 
-    if (savedFeedback !== null) {
-      return JSON.parse(savedFeedback);
+    if (!savedContacts) {
+      return [
+        { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
+        { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
+        { id: "id-3", name: "Eden Clements", number: "645-17-79" },
+        { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
+      ];
     }
-    return state;
-    // ======= або варіант 2 через тернарник ============
-
-    // return savedFeedback ? JSON.parse(savedFeedback) : state;
-
-    // ======= /через тернарник ============
+    return JSON.parse(savedContacts);
   });
-  const feedbackTyps = ['good', 'neutral', 'bad'];
-  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
-  const positiveFeedback = totalFeedback
-    ? Math.round((feedback.good / totalFeedback) * 100)
-    : 0;
 
-  const updateFeedback = feedbackType => {
-    setFeedback({
-      ...feedback,
-      [feedbackType]: feedback[feedbackType] + 1,
+  useEffect(() => {
+    window.localStorage.setItem("save-contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handelContactFrom = (values, actions) => {
+    const newUser = { ...values, id: nanoid() };
+    setContact((prev) => [...contacts, newUser]);
+    actions.resetForm();
+  };
+  const handeleDeleteContact = (contactId) => {
+    setContact((prevId) => {
+      // prevId - это массив, который содержит текущие иды
+      return prevId.filter((contacts) => contacts.id !== contactId);
     });
   };
 
-  const resetFeedBack = () => {
-    setFeedback(state);
-  };
-
-  useEffect(() => {
-    localStorage.setItem('feedback', JSON.stringify(feedback));
-  }, [feedback]);
-
+  const [searchContact, setSearchContact] = useState("");
+  const visiableContact = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(searchContact.toLowerCase())
+  );
   return (
     <>
-      <Description />
-
-      <Options
-        textBtns={feedbackTyps}
-        totalFeedback={totalFeedback}
-        onLeaveFeedback={updateFeedback}
-        onReset={resetFeedBack}
-      />
-
-      {totalFeedback > 0 ? (
-        <Feedback
-          value={feedback}
-          positiveFeedback={positiveFeedback}
-          totalFeedback={totalFeedback}
+      <div>
+        <h1>Phonebook</h1>
+        <ContactForm handelContactFrom={handelContactFrom} />
+        <SearchBox
+          searchContact={searchContact}
+          setSearchContact={setSearchContact}
         />
-      ) : (
-        <Notification />
-      )}
+        <ContactList
+          contactList={visiableContact}
+          handeleDeleteContact={handeleDeleteContact}
+        />
+      </div>
     </>
   );
 }
