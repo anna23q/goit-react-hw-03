@@ -1,51 +1,113 @@
-import css from "./ContactForm.module.css";
-import { Field, Formik, Form, ErrorMessage } from "formik";
-import { useId } from "react";
-import * as Yup from "yup";
+import { useId } from 'react';
+import { nanoid } from 'nanoid';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
-export default function ContactForm({ handelContactFrom }) {
-  const id = useId();
+import css from './ContactForm.module.css';
 
-  const contactSchema = Yup.object().shape({
-    name: Yup.string().min(3, "Too Short").max(50, "Too Long").required(),
-    number: Yup.string().min(3, "Too Short").max(50, "Too Long").required(),
-  });
+const UserSchema = Yup.object().shape({
+  name: Yup.string()
+    .min(3, 'Must be at least 3 characters')
+    .max(50, 'Must be 50 characters or less')
+    .required('Name is required'),
+  number: Yup.string()
+    .min(3, 'Must be at least 3 characters')
+    .max(50, 'Must be 50 characters or less')
+    .required('Number is required'),
+});
+
+export default function ContactForm({ onAdd }) {
+  const handeleSubmit = (values, actions) => {
+    const newContact = {
+      id: nanoid(),
+      name: values.name,
+      number: values.number,
+    };
+    onAdd(newContact);
+    actions.resetForm();
+  };
+
+  const filedId = useId();
+
   return (
-    <>
-      <Formik
-        validationSchema={contactSchema}
-        initialValues={{ name: "", number: "" }}
-        onSubmit={handelContactFrom}
-      >
-        <Form className={css.form}>
-          <label htmlFor={id} className={css.formlabel}>
-            Name
-            <Field type="text" name="name" id={id} className={css.formInput} />
-            <ErrorMessage
-              name="name"
-              component="span"
-              className={css.schemaName}
-            />
-          </label>
-          <label htmlFor={id} className={css.formlabel}>
-            Number
-            <Field
-              type="text"
-              name="number"
-              id={id}
-              className={css.formInput}
-            />
-            <ErrorMessage
-              name="number"
-              component="span"
-              className={css.schemaNumber}
-            />
-          </label>
-          <button type="submit" className={css.formButton}>
-            Add concat
-          </button>
-        </Form>
-      </Formik>
-    </>
+    <Formik
+      initialValues={{
+        name: '',
+        number: '',
+      }}
+      validationSchema={UserSchema}
+      onSubmit={handeleSubmit}
+    >
+      <Form className={css.form}>
+        <label className={css.textLabel} htmlFor={`${filedId}-name`}>
+          Name
+        </label>
+        <Field
+          className={css.input}
+          placeholder="Your name"
+          type="text"
+          name="name"
+          id={`${filedId}-name`}
+        />
+        <ErrorMessage className={css.error} name="name" component={'span'} />
+        <label className={css.textLabel} htmlFor={`${filedId}-number`}>
+          Number
+        </label>
+        <Field
+          className={css.input}
+          placeholder="Your number"
+          type="tel"
+          name="number"
+          id={`${filedId}-number`}
+        />
+        <ErrorMessage className={css.error} name="number" component={'span'} />
+        <button className={css.button} type="submit">
+          Add contact
+        </button>
+      </Form>
+    </Formik>
   );
 }
+// ======================= hands work =======================
+//   export default function ContactForm({ onAdd }) {
+//   const filedId = useId();
+//   // const nameId = useId();
+//   // const numberId = useId();
+//   const handeleSubmit = event => {
+//     event.preventDefault();
+//     onAdd({
+//       id: nanoid(),
+//       name: event.target.elements.name.value,
+//       number: event.target.elements.number.value,
+//     });
+//     event.target.reset();
+//   };
+//   return (
+//     <form className={css.form} onSubmit={handeleSubmit}>
+//       <label className={css.textLabel} htmlFor={`${filedId}-name`}>
+//         Name
+//       </label>
+//       <input
+//         className={css.input}
+//         placeholder="Your name"
+//         type="text"
+//         name="name"
+//         id={`${filedId}-name`}
+//       />
+//       <label className={css.textLabel} htmlFor={`${filedId}-number`}>
+//         Number
+//       </label>
+//       <input
+//         className={css.input}
+//         placeholder="Your number"
+//         type="tel"
+//         name="number"
+//         id={`${filedId}-number`}
+//       />
+//       <button className={css.button} type="submit">
+//         Add contact
+//       </button>
+//     </form>
+//   );
+// }
+// ======================= /hands work =======================
