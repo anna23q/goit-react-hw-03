@@ -1,7 +1,7 @@
 import css from "./ContactForm.module.css";
 import { Field, Formik, Form, ErrorMessage } from "formik";
 import { useId } from "react";
-import Yup from "yup";
+import * as Yup from "yup";
 
 export default function ContactForm({ handelContactFrom }) {
   const id = useId();
